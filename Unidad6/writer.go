@@ -30,6 +30,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	writer := customWriter()
+	writer := customWriter{}
 	io.Copy(writer, resp.Body)
 }
