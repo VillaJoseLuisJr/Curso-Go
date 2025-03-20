@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
 	"strconv"
 )
@@ -39,10 +40,65 @@ func leerCSV(nombreArchivo string) ([]Alumno, error) {
 		}
 		alumnos = append(alumnos, Alumno{Nombre: nombre, Notas: notas})
 	}
+	return alumnos, nil
+}
 
-	//Volver a partir de la hora con 44 minutos del curso
+func calcularPromedio(notas []float64) float64 {
+	var suma float64
+	for _, nota := range notas {
+		suma += nota
+	}
+	return suma / float64(len(notas))
+}
+
+func calcularMediaAritmetica(alumnos []Alumno) float64 {
+	var suma float64
+	var cantidadNotas int
+	for _, alumno := range alumnos {
+		for _, nota := range alumno.Notas {
+			suma += nota
+			cantidadNotas++
+		}
+	}
+	return suma / float64(cantidadNotas)
+}
+
+func escribirCSV(nombreArchivo string, alumnos []Alumno) error {
+	archivo, err := os.Create(nombreArchivo)
+	if err != nil {
+		return err
+	}
+	defer archivo.Close()
+
+	escritor := csv.NewWriter(archivo)
+	defer escritor.Flush()
+
+	for _, alumno := range alumnos {
+		promedio := calcularPromedio(alumno.Notas)
+		registro := []string{alumno.Nombre, fmt.Sprintf("%.2f", promedio)}
+		if err := escritor.Write(registro); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func main() {
+	alumnos, err := leerCSV("notas.csv")
+	if err != nil {
+		fmt.Println("Error al leer el archivo CSV:", err)
+		return
+	}
+
+	mediaAritmetica := calcularMediaAritmetica(alumnos)
+	fmt.Printf("La media aritmética de todas las notas es: %.2f\n", mediaAritmetica)
+
+	err = escribirCSV("promedios.csv", alumnos)
+	if err != nil {
+		fmt.Println("Error al escribir el archivo CSV:", err)
+		return
+	}
+	fmt.Println("Archivo 'promedios.csv' generado con éxito.")
 
 }
