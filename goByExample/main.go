@@ -4,19 +4,22 @@ import (
 	"fmt"
 )
 
+func fact(n int) int {
+	if n == 0 {
+		return 1
+	}
+	return n * fact(n-1)
+}
+
 func main() {
-	var a = "initial"
-	fmt.Println(a)
+	fmt.Println(fact(7))
 
-	var b, c int = 1, 2
-	fmt.Println(b, c)
-
-	var d = true
-	fmt.Println(d)
-
-	var e int
-	fmt.Println(e)
-
-	f := "apple"
-	fmt.Println(f)
+	var fib func(n int) int
+	fib = func(n int) int {
+		if n < 2 {
+			return n
+		}
+		return fib(n-1) + fib(n-2)
+	}
+	fmt.Println(fib(7))
 }
