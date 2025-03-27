@@ -2,24 +2,41 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
 
-func fact(n int) int {
-	if n == 0 {
-		return 1
-	}
-	return n * fact(n-1)
-}
-
 func main() {
-	fmt.Println(fact(7))
-
-	var fib func(n int) int
-	fib = func(n int) int {
-		if n < 2 {
-			return n
-		}
-		return fib(n-1) + fib(n-2)
+	requests := make(chan int, 5)
+	for i := 1; i <= 5; i++ {
+		requests <- i
 	}
-	fmt.Println(fib(7))
+	close(requests)
+
+	limiter := time.Tick(200 * time.Millisecond)
+
+	for req := range requests {
+		<-limiter
+		fmt.Println("request", req, time.Now())
+	}
+
+	burstyLimiter := make(chan time.Time, 3)
+
+	for i := 1; i < 3; i++ {
+		burstyLimiter <- time.Now()
+	}
+	go func() {
+		for t := range time.Tick(200 * time.Millisecond) {
+			burstyLimiter <- t
+		}
+	}()
+
+	burstyRequests := make(chan int, 5)
+	for i := 1; i <= 5; i++ {
+		burstyRequests <- i
+	}
+	close(burstyRequests)
+	for req := range burstyRequests {
+		<-burstyLimiter
+		fmt.Println("request", req, time.Now())
+	}
 }
