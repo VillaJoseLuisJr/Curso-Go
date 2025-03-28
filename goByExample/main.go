@@ -1,60 +1,83 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 )
 
-type point struct {
-	x, y int
+type response1 struct {
+	Page   int
+	Fruits []string
+}
+
+type response2 struct {
+	Page   int      `json:"page"`
+	Fruits []string `json:"fruits"`
 }
 
 func main() {
+	bolB, _ := json.Marshal(true)
+	fmt.Println(string(bolB))
 
-	p := point{1, 2}
-	fmt.Printf("struct1: %v\n", p)
+	intB, _ := json.Marshal(1)
+	fmt.Println(string(intB))
 
-	fmt.Printf("struct2: %+v\n", p)
+	fltB, _ := json.Marshal(2.34)
+	fmt.Println(string(fltB))
 
-	fmt.Printf("struct3: %#v\n", p)
+	strB, _ := json.Marshal("gopher")
+	fmt.Println(string(strB))
 
-	fmt.Printf("type: %T\n", p)
+	slcD := []string{"apple", "peach", "pear"}
+	slcB, _ := json.Marshal(slcD)
+	fmt.Println(string(slcB))
 
-	fmt.Printf("bool: %t\n", true)
+	mapD := map[string]int{"apple": 5, "lettuce": 7}
+	mapB, _ := json.Marshal(mapD)
+	fmt.Println(string(mapB))
 
-	fmt.Printf("int: %d\n", 123)
+	res1D := &response1{
+		Page:   1,
+		Fruits: []string{"apple", "peach", "pear"}}
+	res1B, _ := json.Marshal(res1D)
+	fmt.Println(string(res1B))
 
-	fmt.Printf("bin: %b\n", 14)
+	res2D := &response2{
+		Page:   1,
+		Fruits: []string{"apple", "peach", "pear"}}
+	res2B, _ := json.Marshal(res2D)
+	fmt.Println(string(res2B))
 
-	fmt.Printf("char: %c\n", 33)
+	byt := []byte(`{"num":6.13,"strs":["a","b"]}`)
 
-	fmt.Printf("hex: %x\n", 456)
+	var dat map[string]interface{}
 
-	fmt.Printf("float1: %f\n", 78.9)
+	if err := json.Unmarshal(byt, &dat); err != nil {
+		panic(err)
+	}
+	fmt.Println(dat)
 
-	fmt.Printf("float2: %e\n", 123400000.0)
-	fmt.Printf("float3: %E\n", 123400000.0)
+	num := dat["num"].(float64)
+	fmt.Println(num)
 
-	fmt.Printf("str1: %s\n", "\"string\"")
+	strs := dat["strs"].([]interface{})
+	str1 := strs[0].(string)
+	fmt.Println(str1)
 
-	fmt.Printf("str2: %q\n", "\"string\"")
+	str := `{"page": 1, "fruits": ["apple", "peach"]}`
+	res := response2{}
+	json.Unmarshal([]byte(str), &res)
+	fmt.Println(res)
+	fmt.Println(res.Fruits[0])
 
-	fmt.Printf("str3: %x\n", "hex this")
+	enc := json.NewEncoder(os.Stdout)
+	d := map[string]int{"apple": 5, "lettuce": 7}
+	enc.Encode(d)
 
-	fmt.Printf("pointer: %p\n", &p)
-
-	fmt.Printf("width1: |%6d|%6d|\n", 12, 345)
-
-	fmt.Printf("width2: |%6.2f|%6.2f|\n", 1.2, 3.45)
-
-	fmt.Printf("width3: |%-6.2f|%-6.2f|\n", 1.2, 3.45)
-
-	fmt.Printf("width4: |%6s|%6s|\n", "foo", "b")
-
-	fmt.Printf("width5: |%-6s|%-6s|\n", "foo", "b")
-
-	s := fmt.Sprintf("sprintf: a %s", "string")
-	fmt.Println(s)
-
-	fmt.Fprintf(os.Stderr, "io: an %s\n", "error")
+	dec := json.NewDecoder(strings.NewReader(str))
+	res1 := response2{}
+	dec.Decode(&res1)
+	fmt.Println(res1)
 }
